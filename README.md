@@ -4,6 +4,8 @@ Mimics the `unserialize` function in PHP, but returns AST nodes instead.
 
 Any syntax errors are returned in an array. The parser will continue until the end is reached or a fatal error is encountered. This means multiple errors can be returned.
 
+When 1+ errors are encountered, the returned array will only contain error nodes. Use `results[0].type !== 'error'` to know if there are no errors.
+
 ```js
 const {parse} = require('php-unserialize-ast');
 
