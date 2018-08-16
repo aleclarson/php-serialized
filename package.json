@@ -1,0 +1,7 @@
+{
+  "name": "php-unserialize",
+  "version": "1.0.0",
+  "license": "MIT",
+  "repository": "aleclarson/php-unserialize",
+  "description": "Parse a PHP-serialized string"
+}

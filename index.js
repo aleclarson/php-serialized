@@ -1,0 +1,230 @@
+const digit = '0123456789';
+const number = 'bdi';
+const string = /^".*"$/;
+const types = {
+  a: 'array',
+  b: 'boolean',
+  d: 'double',
+  i: 'integer',
+  s: 'string',
+};
+
+function parse(str) {
+  let stack = []; // array stack
+  let nodes = []; // current array
+  let n = Infinity; // array length
+  let o = 0;        // array offset
+
+  let errors = [];
+  NODES: for (let i = 0; i < str.length; i++) {
+    let ch = str.charAt(i);
+    if (ch == '') break;
+
+    let error, type;
+    NODE: do {
+      let start = i;
+
+      // Look for a value type.
+      type = types[ch];
+      if (!type) {
+        // Array may be closed too early.
+        if (ch == '}') {
+          if (errors.length) break NODES;
+          if (stack.length) {
+            type = 'array';
+            error = 'Array closed too early';
+            break;
+          }
+        }
+        error = 'Unexpected char: ' + ch;
+        break;
+      }
+
+      // Non-numbers have a value length.
+      let length = '';
+      if (number.indexOf(ch) == -1) {
+
+        // Look for a colon.
+        ch = str.charAt(++i);
+        if (ch != ':') {
+          error = 'Missing colon';
+          break;
+        }
+
+        // Look for a value length.
+        while (~digit.indexOf(ch = str.charAt(++i))) {
+          length += ch;
+        }
+        length = Number(length);
+      }
+      else {
+        ch = str.charAt(++i);
+      }
+
+      // Look for a colon.
+      if (ch != ':') {
+        error = 'Missing colon';
+        break;
+      }
+
+      let value;
+
+      // Look for the value.
+      ch = str.charAt(++i);
+      switch (type) {
+        case 'array':
+          if (ch != '{') {
+            error = 'Array never opened';
+            break NODE;
+          }
+          i++;
+
+          // Preserve parent array.
+          stack.push([nodes, n, o]);
+
+          // Create our array.
+          nodes = [];
+          n = (2 * length) + 1;
+          o = start;
+          break;
+
+        case 'boolean':
+          if (ch != '0' && ch != '1') {
+            error = 'Invalid boolean value (must be 0 or 1)';
+            break NODE;
+          }
+          i++;
+          value = ch == '1';
+          break;
+
+        case 'double':
+          value = str.slice(i, str.indexOf(';', i));
+          if (isNaN(parseFloat(value))) {
+            error = 'Invalid double value';
+            break NODE;
+          }
+          i += value.length;
+          value = parseFloat(value);
+          break;
+
+        case 'integer':
+          value = str.slice(i, str.indexOf(';', i));
+          if (isNaN(parseInt(value))) {
+            error = 'Invalid integer value';
+            break NODE;
+          }
+          i += value.length;
+          value = parseInt(value);
+          break;
+
+        case 'string':
+          value = str.substr(i, length += 2);
+          if (!string.test(value)) {
+            error = 'Invalid string value';
+            break NODE;
+          }
+          i += length;
+          value = value.slice(1, -1);
+          break;
+      }
+      i--;
+
+      // Look for a semicolon.
+      if (type != 'array') {
+        ch = str.charAt(++i);
+        if (ch != ';') {
+          error = 'Missing semicolon';
+          break;
+        }
+        nodes.push({
+          type,
+          value,
+          start,
+          end: i + 1,
+        });
+      }
+
+      // Look for ends of arrays.
+      while (--n == 0) {
+        ch = str.charAt(++i);
+        if (ch == '') {
+          i = o;
+          type = 'array';
+          error = 'Array never closed';
+          break NODE;
+        }
+        if (ch != '}') {
+          type = 'array';
+          error = 'Array length exceeded';
+          break NODE;
+        }
+        let parent = stack.pop();
+        if (!parent) {
+          type = 'array';
+          error = 'Unexpected char: }';
+          break NODE;
+        }
+        // Create an array node.
+        let node = {
+          type: 'array',
+          value: nodes,
+          start: o,
+          end: i + 1,
+        };
+        // Restore the parent array.
+        [nodes, n, o] = parent;
+        nodes.push(node);
+      }
+
+    // Parse the next node.
+    } while (0);
+
+    if (error) {
+      // Push an error node and keep going.
+      let node = {
+        type: 'error',
+        error,
+        start: i,
+      };
+      nodes.push(node);
+      errors.push(node);
+
+      // Continuing past array errors is hard.
+      if (type == 'array') {
+        break;
+      }
+
+      // Find a semicolon.
+      while (true) {
+        if (ch == ';') {
+          if (type != 'string') break;
+          if (str[i - 1] == '"') break;
+        }
+        ch = str.charAt(++i);
+        if (ch == '') break;
+      }
+
+      // Reset the `error` variable.
+      error = null;
+    }
+  }
+
+  if (errors.length) {
+    return errors;
+  }
+
+  // Detect unfinished arrays.
+  if (stack.length && n > 0) {
+    let node = {
+      type: 'error',
+      error: 'Array never finished',
+      start: o,
+    };
+    nodes.push(node);
+    errors.push(node);
+  }
+
+  return nodes;
+}
+
+exports.parse = parse;
