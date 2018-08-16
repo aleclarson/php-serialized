@@ -1,5 +1,4 @@
 const digit = '0123456789';
-const number = 'bdi';
 const string = /^".*"$/;
 const types = {
   a: 'array',
@@ -7,6 +6,7 @@ const types = {
   d: 'double',
   i: 'integer',
   s: 'string',
+  N: 'null',
 };
 
 function parse(str) {
@@ -20,9 +20,8 @@ function parse(str) {
     let ch = str.charAt(i);
     if (ch == '') break;
 
-    let error, type;
+    let error, type, value, start = i;
     NODE: do {
-      let start = i;
 
       // Look for a value type.
       type = types[ch];
@@ -40,9 +39,15 @@ function parse(str) {
         break;
       }
 
-      // Non-numbers have a value length.
+      // Null values are easy.
+      if (ch == 'N') {
+        value = null;
+        break;
+      }
+
+      // Strings have a length.
       let length = '';
-      if (number.indexOf(ch) == -1) {
+      if (ch == 's') {
 
         // Look for a colon.
         ch = str.charAt(++i);
@@ -51,7 +56,7 @@ function parse(str) {
           break;
         }
 
-        // Look for a value length.
+        // Look for the length.
         while (~digit.indexOf(ch = str.charAt(++i))) {
           length += ch;
         }
@@ -66,8 +71,6 @@ function parse(str) {
         error = 'Missing colon';
         break;
       }
-
-      let value;
 
       // Look for the value.
       ch = str.charAt(++i);
@@ -129,41 +132,50 @@ function parse(str) {
       }
       i--;
 
+    // Parse the next node.
+    } while (0);
+
+    if (!error) {
       // Look for a semicolon.
       if (type != 'array') {
         ch = str.charAt(++i);
         if (ch != ';') {
           error = 'Missing semicolon';
-          break;
         }
-        nodes.push({
-          type,
-          value,
-          start,
-          end: i + 1,
-        });
+        else {
+          nodes.push({
+            type,
+            value,
+            start,
+            end: i + 1,
+          });
+        }
       }
 
-      // Look for ends of arrays.
+      // Look for closed arrays.
       while (--n == 0) {
         ch = str.charAt(++i);
+
         if (ch == '') {
           i = o;
           type = 'array';
           error = 'Array never closed';
-          break NODE;
+          break;
         }
+
         if (ch != '}') {
           type = 'array';
           error = 'Array length exceeded';
-          break NODE;
+          break;
         }
+
         let parent = stack.pop();
         if (!parent) {
           type = 'array';
           error = 'Unexpected char: }';
-          break NODE;
+          break;
         }
+
         // Create an array node.
         let node = {
           type: 'array',
@@ -171,13 +183,12 @@ function parse(str) {
           start: o,
           end: i + 1,
         };
+
         // Restore the parent array.
         [nodes, n, o] = parent;
         nodes.push(node);
       }
-
-    // Parse the next node.
-    } while (0);
+    }
 
     if (error) {
       // Push an error node and keep going.
