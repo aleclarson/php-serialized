@@ -1,5 +1,5 @@
 const DIGIT = '0123456789';
-const STRING = /^".*"$/;
+const STRING = /^"[\s\S]*"$/;
 
 const types = {
   a: 'array',
