@@ -1,4 +1,4 @@
-# php-serialized-ast v1.0.2
+# php-serialized-ast v1.0.3
 
 Mimics the `unserialize` function in PHP, but returns AST nodes instead.
 
