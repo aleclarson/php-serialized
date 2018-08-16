@@ -227,13 +227,12 @@ function parse(str) {
 
   // Detect unfinished arrays.
   if (stack.length && n > 0) {
-    let node = {
+    errors.push({
       type: 'error',
       error: 'Array never finished',
       start: o,
-    };
-    nodes.push(node);
-    errors.push(node);
+    });
+    return errors;
   }
 
   return nodes;
