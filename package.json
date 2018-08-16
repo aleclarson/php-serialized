@@ -1,7 +1,7 @@
 {
-  "name": "php-unserialize",
+  "name": "php-serialized-ast",
   "version": "1.0.0",
   "license": "MIT",
-  "repository": "aleclarson/php-unserialize",
+  "repository": "aleclarson/php-unserialize-ast",
   "description": "Parse a PHP-serialized string"
 }
