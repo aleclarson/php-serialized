@@ -1,6 +1,6 @@
 {
   "name": "php-serialized-ast",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "license": "MIT",
   "repository": "aleclarson/php-serialized-ast",
   "description": "Parse a PHP-serialized string"
