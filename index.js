@@ -122,7 +122,7 @@ function parse(str) {
           break;
 
         case 'string':
-          value = str.substr(i, length += 2);
+          value = str.substr(i, length);
           if (!STRING.test(value)) {
             error = 'Invalid string value';
             break NODE;
