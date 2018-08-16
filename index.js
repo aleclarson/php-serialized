@@ -46,9 +46,9 @@ function parse(str) {
         break;
       }
 
-      // Strings have a length.
+      // Arrays and strings have a length.
       let length = '';
-      if (ch == 's') {
+      if (ch == 'a' || ch == 's') {
 
         // Look for a colon.
         ch = str.charAt(++i);
