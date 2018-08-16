@@ -1,5 +1,6 @@
-const digit = '0123456789';
-const string = /^".*"$/;
+const DIGIT = '0123456789';
+const STRING = /^".*"$/;
+
 const types = {
   a: 'array',
   b: 'boolean',
@@ -57,7 +58,7 @@ function parse(str) {
         }
 
         // Look for the length.
-        while (~digit.indexOf(ch = str.charAt(++i))) {
+        while (~DIGIT.indexOf(ch = str.charAt(++i))) {
           length += ch;
         }
         length = Number(length);
@@ -122,7 +123,7 @@ function parse(str) {
 
         case 'string':
           value = str.substr(i, length += 2);
-          if (!string.test(value)) {
+          if (!STRING.test(value)) {
             error = 'Invalid string value';
             break NODE;
           }
