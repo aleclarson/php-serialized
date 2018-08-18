@@ -14,6 +14,11 @@ function reduceNode(node) {
     }
     return map;
   }
+  if (node.type == 'error') {
+    let e = new Error(node.value);
+    e.start = node.start;
+    throw e;
+  }
   return node.value;
 }
 
