@@ -1,4 +1,4 @@
-# php-serialized-ast v1.1.1
+# php-serialized v1.1.1
 
 PHP `serialize` and `unserialize` for NodeJS (with **useful error messages**)
 
