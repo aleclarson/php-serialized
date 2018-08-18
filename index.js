@@ -255,3 +255,5 @@ function parse(str, raw) {
 
 exports.parse = parse;
 exports.reduce = require('./reduce');
+exports.serialize = require('./serialize');
+exports.unserialize = (str, fn) => parse(str, fn || true);
