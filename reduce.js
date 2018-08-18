@@ -10,6 +10,9 @@ function reduceNode(node) {
     e.start = node.start;
     throw e;
   }
+  if (node.type == 'array') {
+    return node.value.map(reduceNode);
+  }
   return node.value;
 }
 
