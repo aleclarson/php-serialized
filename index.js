@@ -10,7 +10,7 @@ const types = {
   N: 'null',
 };
 
-function parse(str) {
+function parse(str, raw) {
   let stack = []; // array stack
   let nodes = []; // current array
   let n = Infinity; // array length
@@ -143,6 +143,9 @@ function parse(str) {
         if (ch != ';') {
           error = 'Missing semicolon';
         }
+        else if (raw) {
+          nodes.push(value);
+        }
         else {
           nodes.push({
             type,
@@ -178,12 +181,17 @@ function parse(str) {
         }
 
         // Create an array node.
-        let node = {
+        let node = raw ? nodes : {
           type: 'array',
           value: nodes,
           start: o,
           end: i + 1,
         };
+
+        // Raw mode may use an array transformer.
+        if (typeof raw == 'function') {
+          node = raw(node);
+        }
 
         // Restore the parent array.
         [nodes, n, o] = parent;
@@ -192,6 +200,13 @@ function parse(str) {
     }
 
     if (error) {
+      // Throw the error in raw mode.
+      if (raw) {
+        let e = SyntaxError(error);
+        e.start = i;
+        throw e;
+      }
+
       // Push an error node and keep going.
       let node = {
         type: 'error',
