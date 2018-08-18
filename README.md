@@ -1,4 +1,4 @@
-# php-serialized v1.1.1
+# php-serialized v1.2.0
 
 PHP `serialize` and `unserialize` for NodeJS (with **useful error messages**)
 
