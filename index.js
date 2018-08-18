@@ -239,3 +239,4 @@ function parse(str) {
 }
 
 exports.parse = parse;
+exports.reduce = require('./reduce');
